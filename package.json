@@ -1,0 +1,28 @@
+{
+  "name": "venom-bot-server",
+  "version": "1.0.0",
+  "description": "Backend server to control whatsapp bot by websocket",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start":"node ./dist/index.js",
+    "dev:run":"npx nodemon",
+    "dev:compile":"tsc -w"
+  },
+  "author": "Rafael Floriani Pinto",
+  "license": "ISC",
+  "dependencies": {
+    "@types/bluebird": "^3.5.36",
+    "@types/express": "^4.17.13",
+    "@types/express-ws": "^3.0.1",
+    "@types/validator": "^13.7.1",
+    "express": "^4.17.3",
+    "express-ws": "^5.0.2",
+    "nodemon": "^2.0.15",
+    "sequelize": "^7.0.0-next.1",
+    "serverpreconfigured": "^1.0.6",
+    "sharp": "^0.30.3",
+    "typescript": "^4.6.2",
+    "venom-bot": "^4.0.9"
+  }
+}
