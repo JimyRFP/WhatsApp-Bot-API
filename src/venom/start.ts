@@ -16,7 +16,7 @@ export function startVenom(sessionName:string,options:any={},onConnected:any,onE
         disableSpins:options.disableSpins?options.disableSpins:true,
         disableWelcome:options.disableWelcome?options.disableWelcome:true,
         updateLogs:options.updateLogs?options.updateLogs:false,
-        headless:options.headless?options.headless:false
+        headless:options.headless?options.headless:true,
       },
       undefined,
       (browser:any,wsPage:any)=>{

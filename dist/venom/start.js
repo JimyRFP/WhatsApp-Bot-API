@@ -12,7 +12,7 @@ function startVenom(sessionName, options = {}, onConnected, onError, onQRCodeUpd
         disableSpins: options.disableSpins ? options.disableSpins : true,
         disableWelcome: options.disableWelcome ? options.disableWelcome : true,
         updateLogs: options.updateLogs ? options.updateLogs : false,
-        headless: options.headless ? options.headless : false
+        headless: options.headless ? options.headless : true,
     }, undefined, (browser, wsPage) => {
         if (browserInfo == undefined)
             return;

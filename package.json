@@ -1,13 +1,13 @@
 {
   "name": "venom-bot-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Backend server to control whatsapp bot by websocket",
   "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start":"node ./dist/index.js",
-    "dev:run":"npx nodemon",
-    "dev:compile":"tsc -w"
+    "start": "node ./dist/index.js",
+    "dev:run": "npx nodemon",
+    "dev:compile": "tsc -w"
   },
   "author": "Rafael Floriani Pinto",
   "license": "ISC",
@@ -20,6 +20,7 @@
     "express-ws": "^5.0.2",
     "nodemon": "^2.0.15",
     "sequelize": "^7.0.0-next.1",
+    "sequelize-cli": "^6.4.1",
     "serverpreconfigured": "^1.0.6",
     "sharp": "^0.30.3",
     "typescript": "^4.6.2",
