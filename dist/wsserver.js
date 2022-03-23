@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const serverpreconfigured_1 = __importDefault(require("serverpreconfigured"));
 const ws_1 = require("./modules/ws");
 const routes_1 = require("./routes/wa/routes");
-class WhatsAppBotServer {
+class VenomBotServer {
     constructor(options = {}) {
         this._userAuthRouteUrl = options.userAuthRouteUrl ? options.userAuthRouteUrl : '/user';
         this._wsAuthRouteUrl = options.wsAuthRouteUrl ? options.wsAuthRouteUrl : '/wsauth';
@@ -22,4 +22,4 @@ class WhatsAppBotServer {
         this._expressServer.listen(port);
     }
 }
-exports.WhatsAppBotServer = WhatsAppBotServer;
+exports.VenomBotServer = VenomBotServer;

@@ -2,7 +2,7 @@ import ExpressServer from "serverpreconfigured";
 import { initWebSocket } from "./modules/ws";
 import { router as whatsAppWSRouter } from "./routes/wa/routes";
 import expressWs from "express-ws";
-export class WhatsAppBotServer{
+export class VenomBotServer{
     _userAuthRouteUrl:string;
     _wsAuthRouteUrl:string;
     _whatsAppWSRouteUrl:string;
