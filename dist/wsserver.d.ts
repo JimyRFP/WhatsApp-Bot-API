@@ -9,4 +9,5 @@ export declare class VenomBotServer {
     _wsInstance: expressWs.Instance;
     constructor(options?: any);
     listen(port?: number): void;
+    getApp(): any;
 }

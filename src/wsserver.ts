@@ -23,4 +23,7 @@ export class VenomBotServer{
     listen(port?:number){
        this._expressServer.listen(port);
     }
+    getApp(){
+       return this._expressServer.getApp();
+    }
 }

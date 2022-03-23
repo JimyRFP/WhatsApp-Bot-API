@@ -21,5 +21,8 @@ class VenomBotServer {
     listen(port) {
         this._expressServer.listen(port);
     }
+    getApp() {
+        return this._expressServer.getApp();
+    }
 }
 exports.VenomBotServer = VenomBotServer;
