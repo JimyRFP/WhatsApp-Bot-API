@@ -1,5 +1,3 @@
-import {authenticateWS,checkConnectionAuth} from "serverpreconfigured";
-import { randomString } from "serverpreconfigured";
 import { getVenomSessionName } from "../../venom/session/session";
 import { killProcessBySessionName } from "../../venom/process/process";
 import { startVenom } from "../../venom/start";
@@ -7,6 +5,7 @@ import { updateProcessDataBySessionName } from "../../venom/process/process";
 import { killProcessByPid } from "../../utils/so/process";
 import { WSResponse } from "../../utils/response/response";
 import {sendTextMessage,sendMassiveTextMessage} from "../../venom/text";
+import { checkWSAuth } from "serverpreconfigured";
 enum ConnectionStatus{
     "Waiting"='Waiting',
     'Connecting'='Connecting',
@@ -14,7 +13,7 @@ enum ConnectionStatus{
     'Disconnected'='Disconnected',
 };
 enum ClientMessageAction{
-    Auth="authenticate",
+    Auth="Authenticate",
     ConnectWA="connect",
     SendTextMessage='send_text_message',
     SendMassiveTextMessage='send_massive_text_message',
@@ -23,6 +22,7 @@ enum ClientMessageAction{
     UpdatedContacts='updated_contact', 
     Reconnect='reconnect',   
     Logout='logout',
+    CloseAndSave='close_and_save',
 };
 enum ServerMessageAction{
     ActionRequired='action_required',
@@ -56,17 +56,17 @@ enum WSErrorCode{
 
 export function router(dir:string,app:any){
         app.ws(dir+'/wa_connect',async (ws:any,req:any)=>{
-            ws.connection_token=randomString(30);
             setConnectionStatus(ws,ConnectionStatus.Waiting);
             ws.on('message',(msg:any)=>{wsOnMessage(ws,msg)});
         });
 }        
 
 async function wsOnMessage(ws:any,msg:any){
+    if(!(await checkWSAuth(ws,msg)))
+      return;
     let m=JSON.parse(msg);
     if(!m.action)
       return responseOk(ws,ServerMessageAction.ActionRequired,"Must have 'action' param");
-    if((await checkConnectionAuth(ws.userId||0,ws.connection_token))){
         await checkClientIsConnected(ws);
         switch(m.action){
             case ClientMessageAction.ConnectWA:
@@ -78,20 +78,15 @@ async function wsOnMessage(ws:any,msg:any){
             case ClientMessageAction.Reconnect:
                return reconnectClient(ws,m);       
             case ClientMessageAction.Logout:
-               return logoutClient(ws,m);   
+               return logoutClient(ws,m);
+            case ClientMessageAction.CloseAndSave:
+                return saveConnectAndCloseWS(ws,m);    
+            case ClientMessageAction.Auth:
+               return responseOk(ws,ServerMessageAction.AuthOK);     
+                 
                  
         }
-        return responseOk(ws,ServerMessageAction.InvalidAction,'Unknown Action');
-    }else{
-        if(m.action==ClientMessageAction.Auth){
-            if((await authenticateWS(m.userId,m.token,ws.connection_token))){
-                ws.userId=m.userId;
-                return responseOk(ws,ServerMessageAction.AuthOK);
-            }
-            return responseOk(ws,ServerMessageAction.AuthError,"Invalid Token, get new token into Get WS Token API");
-        }
-        return responseOk(ws,ServerMessageAction.AuthRequired,"Require authetication");
-   }
+    return responseOk(ws,ServerMessageAction.InvalidAction,'Unknown Action');
 }
 
 async function connectWA(ws:any,msg:any){ 
@@ -214,6 +209,22 @@ async function logoutClient(ws:any,msg:any){
     }   
     ws.terminate();
 }
+async function saveConnectAndCloseWS(ws:any,msg:any){
+    if(ws.connection_status!==ConnectionStatus.Connected){
+        return responseOk(ws,ServerMessageAction.ActionFailed,"WS Not Connected");
+    }
+    try{
+      ws.venomClient.close();
+      responseOk(ws,ServerMessageAction.ActionOK,"OK");
+      ws.terminate();
+    }catch(e){
+      responseOk(ws,ServerMessageAction.ActionFailed,"I_E",e);
+    }
+}
 function setConnectionStatus(ws:any,status:ConnectionStatus){
    ws.connection_status=status;
 }
+
+
+
+

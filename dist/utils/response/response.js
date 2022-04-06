@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.WSResponse = void 0;
 function WSResponse(isOK, message = '', errorMessage = "", data = {}) {
     return JSON.stringify({
         is_ok: isOK,

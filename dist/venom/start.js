@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.startVenom = void 0;
 const venom = require('venom-bot');
 function startVenom(sessionName, options = {}, onConnected, onError, onQRCodeUpdate, browserInfo) {
     venom.create(sessionName, (base64Qrimg, asciiQR, attempts, urlCode) => {

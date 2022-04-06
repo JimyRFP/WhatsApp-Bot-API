@@ -6,6 +6,6 @@ export declare function sendMassiveTextMessage(client: any, message: string, to:
     }[];
     error: {
         to_index: number;
-        error: any;
+        error: unknown;
     }[];
 }>;

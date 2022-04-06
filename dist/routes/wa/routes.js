@@ -9,8 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const serverpreconfigured_1 = require("serverpreconfigured");
-const serverpreconfigured_2 = require("serverpreconfigured");
+exports.router = void 0;
 const session_1 = require("../../venom/session/session");
 const process_1 = require("../../venom/process/process");
 const start_1 = require("../../venom/start");
@@ -18,6 +17,7 @@ const process_2 = require("../../venom/process/process");
 const process_3 = require("../../utils/so/process");
 const response_1 = require("../../utils/response/response");
 const text_1 = require("../../venom/text");
+const serverpreconfigured_1 = require("serverpreconfigured");
 var ConnectionStatus;
 (function (ConnectionStatus) {
     ConnectionStatus["Waiting"] = "Waiting";
@@ -28,7 +28,7 @@ var ConnectionStatus;
 ;
 var ClientMessageAction;
 (function (ClientMessageAction) {
-    ClientMessageAction["Auth"] = "authenticate";
+    ClientMessageAction["Auth"] = "Authenticate";
     ClientMessageAction["ConnectWA"] = "connect";
     ClientMessageAction["SendTextMessage"] = "send_text_message";
     ClientMessageAction["SendMassiveTextMessage"] = "send_massive_text_message";
@@ -37,6 +37,7 @@ var ClientMessageAction;
     ClientMessageAction["UpdatedContacts"] = "updated_contact";
     ClientMessageAction["Reconnect"] = "reconnect";
     ClientMessageAction["Logout"] = "logout";
+    ClientMessageAction["CloseAndSave"] = "close_and_save";
 })(ClientMessageAction || (ClientMessageAction = {}));
 ;
 var ServerMessageAction;
@@ -72,7 +73,6 @@ var WSErrorCode;
 ;
 function router(dir, app) {
     app.ws(dir + '/wa_connect', (ws, req) => __awaiter(this, void 0, void 0, function* () {
-        ws.connection_token = serverpreconfigured_2.randomString(30);
         setConnectionStatus(ws, ConnectionStatus.Waiting);
         ws.on('message', (msg) => { wsOnMessage(ws, msg); });
     }));
@@ -80,35 +80,29 @@ function router(dir, app) {
 exports.router = router;
 function wsOnMessage(ws, msg) {
     return __awaiter(this, void 0, void 0, function* () {
+        if (!(yield (0, serverpreconfigured_1.checkWSAuth)(ws, msg)))
+            return;
         let m = JSON.parse(msg);
         if (!m.action)
             return responseOk(ws, ServerMessageAction.ActionRequired, "Must have 'action' param");
-        if ((yield serverpreconfigured_1.checkConnectionAuth(ws.userId || 0, ws.connection_token))) {
-            yield checkClientIsConnected(ws);
-            switch (m.action) {
-                case ClientMessageAction.ConnectWA:
-                    return connectWA(ws, m);
-                case ClientMessageAction.SendTextMessage:
-                    return sendTextMessageByWS(ws, m);
-                case ClientMessageAction.SendMassiveTextMessage:
-                    return sendMassiveTextMessageByWS(ws, m);
-                case ClientMessageAction.Reconnect:
-                    return reconnectClient(ws, m);
-                case ClientMessageAction.Logout:
-                    return logoutClient(ws, m);
-            }
-            return responseOk(ws, ServerMessageAction.InvalidAction, 'Unknown Action');
+        yield checkClientIsConnected(ws);
+        switch (m.action) {
+            case ClientMessageAction.ConnectWA:
+                return connectWA(ws, m);
+            case ClientMessageAction.SendTextMessage:
+                return sendTextMessageByWS(ws, m);
+            case ClientMessageAction.SendMassiveTextMessage:
+                return sendMassiveTextMessageByWS(ws, m);
+            case ClientMessageAction.Reconnect:
+                return reconnectClient(ws, m);
+            case ClientMessageAction.Logout:
+                return logoutClient(ws, m);
+            case ClientMessageAction.CloseAndSave:
+                return saveConnectAndCloseWS(ws, m);
+            case ClientMessageAction.Auth:
+                return responseOk(ws, ServerMessageAction.AuthOK);
         }
-        else {
-            if (m.action == ClientMessageAction.Auth) {
-                if ((yield serverpreconfigured_1.authenticateWS(m.userId, m.token, ws.connection_token))) {
-                    ws.userId = m.userId;
-                    return responseOk(ws, ServerMessageAction.AuthOK);
-                }
-                return responseOk(ws, ServerMessageAction.AuthError, "Invalid Token, get new token into Get WS Token API");
-            }
-            return responseOk(ws, ServerMessageAction.AuthRequired, "Require authetication");
-        }
+        return responseOk(ws, ServerMessageAction.InvalidAction, 'Unknown Action');
     });
 }
 function connectWA(ws, msg) {
@@ -117,14 +111,14 @@ function connectWA(ws, msg) {
             return responseOk(ws, ServerMessageAction.ActionFailed, "Connection Status Invalid Current: " + ws.connection_status);
         setConnectionStatus(ws, ConnectionStatus.Connecting);
         responseOk(ws, ServerMessageAction.Connecting, 'Waiting Connection');
-        const sessionName = session_1.getVenomSessionName(ws.userId, 1);
+        const sessionName = (0, session_1.getVenomSessionName)(ws.userId, 1);
         try {
-            yield process_1.killProcessBySessionName(sessionName);
+            yield (0, process_1.killProcessBySessionName)(sessionName);
         }
         catch (e) {
             return responseError(ws, ServerMessageAction.FatalError, "Error to close old session");
         }
-        start_1.startVenom(sessionName, {}, (client) => { venomOnConnected(ws, client); }, (e) => { venomOnError(ws, e); }, (data) => { venomOnQRCodeUpdate(ws, data); }, (data) => {
+        (0, start_1.startVenom)(sessionName, {}, (client) => { venomOnConnected(ws, client); }, (e) => { venomOnError(ws, e); }, (data) => { venomOnQRCodeUpdate(ws, data); }, (data) => {
             venomBrowserInfo(sessionName, data);
         });
     });
@@ -151,10 +145,10 @@ function venomBrowserInfo(sessionName, data) {
     return __awaiter(this, void 0, void 0, function* () {
         const pid = data.browser.process().pid;
         try {
-            yield process_2.updateProcessDataBySessionName(sessionName, { pid });
+            yield (0, process_2.updateProcessDataBySessionName)(sessionName, { pid });
         }
         catch (e) {
-            process_3.killProcessByPid(pid);
+            (0, process_3.killProcessByPid)(pid);
         }
     });
 }
@@ -165,7 +159,7 @@ function sendTextMessageByWS(ws, msg) {
         if (!Boolean(msg.to) || !Boolean(msg.text))
             return responseOk(ws, ServerMessageAction.InvalidParams, "Must have parans 'to' and 'text'", msg);
         responseOk(ws, ServerMessageAction.Processing);
-        text_1.sendTextMessage(ws.venomClient, msg.text, msg.to, onSend, onError);
+        (0, text_1.sendTextMessage)(ws.venomClient, msg.text, msg.to, onSend, onError);
         function onSend(result) {
             if (result.erro) {
                 return responseOk(ws, ServerMessageAction.ActionFailed, result.text);
@@ -186,17 +180,17 @@ function sendMassiveTextMessageByWS(ws, msg) {
         if (!Array.isArray(msg.to))
             return responseOk(ws, ServerMessageAction.InvalidParams, "'to' param must be array like 'to:[\"contact1\",\"contact2\"]'");
         responseOk(ws, ServerMessageAction.Processing);
-        text_1.sendMassiveTextMessage(ws.venomClient, msg.text, msg.to, onEnd);
+        (0, text_1.sendMassiveTextMessage)(ws.venomClient, msg.text, msg.to, onEnd);
         function onEnd(data) {
             responseOk(ws, ServerMessageAction.ActionOK, "", { send: data.ok, error: data.error });
         }
     });
 }
 function responseOk(ws, message, errorMessage = '', data = {}) {
-    ws.send(response_1.WSResponse(true, message, errorMessage, data));
+    ws.send((0, response_1.WSResponse)(true, message, errorMessage, data));
 }
 function responseError(ws, message, errorMessage, data = {}) {
-    ws.send(response_1.WSResponse(false, message, errorMessage, data));
+    ws.send((0, response_1.WSResponse)(false, message, errorMessage, data));
     ws.terminate();
 }
 function checkClientIsConnected(ws) {
@@ -244,6 +238,21 @@ function logoutClient(ws, msg) {
             responseOk(ws, ServerMessageAction.LogoutError, 'Disconnect by your phone.');
         }
         ws.terminate();
+    });
+}
+function saveConnectAndCloseWS(ws, msg) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (ws.connection_status !== ConnectionStatus.Connected) {
+            return responseOk(ws, ServerMessageAction.ActionFailed, "WS Not Connected");
+        }
+        try {
+            ws.venomClient.close();
+            responseOk(ws, ServerMessageAction.ActionOK, "OK");
+            ws.terminate();
+        }
+        catch (e) {
+            responseOk(ws, ServerMessageAction.ActionFailed, "I_E", e);
+        }
     });
 }
 function setConnectionStatus(ws, status) {

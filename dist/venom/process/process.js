@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.killProcessBySessionName = exports.updateProcessDataBySessionName = exports.getProcessDataBySessionName = void 0;
 const VenomSession_1 = require("../../database/models/VenomSession");
 const process_1 = require("../../utils/so/process");
 function getProcessDataBySessionName(sessionName) {
@@ -50,7 +51,7 @@ function killProcessBySessionName(sessionName) {
                 return false;
             }
             else {
-                return yield process_1.killProcessByPid(parseInt(s.browser_pid));
+                return yield (0, process_1.killProcessByPid)(parseInt(s.browser_pid));
             }
         }
         catch (e) {
