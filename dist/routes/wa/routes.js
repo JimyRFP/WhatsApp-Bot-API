@@ -82,7 +82,13 @@ function wsOnMessage(ws, msg) {
     return __awaiter(this, void 0, void 0, function* () {
         if (!(yield (0, serverpreconfigured_1.checkWSAuth)(ws, msg)))
             return;
-        let m = JSON.parse(msg);
+        let m = {};
+        try {
+            let m = JSON.parse(msg);
+        }
+        catch (e) {
+            return responseError(ws, "Message must be JSON string", "");
+        }
         if (!m.action)
             return responseOk(ws, ServerMessageAction.ActionRequired, "Must have 'action' param");
         yield checkClientIsConnected(ws);

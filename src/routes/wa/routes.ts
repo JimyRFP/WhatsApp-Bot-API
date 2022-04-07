@@ -64,7 +64,12 @@ export function router(dir:string,app:any){
 async function wsOnMessage(ws:any,msg:any){
     if(!(await checkWSAuth(ws,msg)))
       return;
-    let m=JSON.parse(msg);
+    let m:any={};  
+    try{  
+       let m=JSON.parse(msg);
+    }catch(e){
+       return responseError(ws,"Message must be JSON string","");
+    }
     if(!m.action)
       return responseOk(ws,ServerMessageAction.ActionRequired,"Must have 'action' param");
         await checkClientIsConnected(ws);
