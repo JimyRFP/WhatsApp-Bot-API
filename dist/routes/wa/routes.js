@@ -62,6 +62,7 @@ var ServerMessageAction;
     ServerMessageAction["LogoutOK"] = "logout_ok";
     ServerMessageAction["LogoutError"] = "logout_error";
     ServerMessageAction["DeviceInfo"] = "device_info";
+    ServerMessageAction["Disconected"] = "disconnected";
 })(ServerMessageAction || (ServerMessageAction = {}));
 var WSErrorCode;
 (function (WSErrorCode) {
@@ -291,7 +292,7 @@ function disconnectSession(ws, msg) {
         try {
             yield ws.venomClient.logout();
             setConnectionStatus(ws, ConnectionStatus.Waiting);
-            return responseOk(ws, ServerMessageAction.ActionOK, "Desconected");
+            return responseOk(ws, ServerMessageAction.Disconected, "Disconected");
         }
         catch (e) {
             return responseError(ws, ServerMessageAction.ActionFailed, "Disconnect error");

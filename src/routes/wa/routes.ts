@@ -45,6 +45,7 @@ enum ServerMessageAction{
     LogoutOK='logout_ok',
     LogoutError='logout_error',
     DeviceInfo='device_info',
+    Disconected='disconnected',
     
 }
 enum WSErrorCode{
@@ -252,7 +253,7 @@ async function disconnectSession(ws:any,msg:any){
     try{
        await ws.venomClient.logout();
        setConnectionStatus(ws,ConnectionStatus.Waiting);
-       return responseOk(ws,ServerMessageAction.ActionOK,"Desconected");
+       return responseOk(ws,ServerMessageAction.Disconected,"Disconected");
     }catch(e){
        return responseError(ws,ServerMessageAction.ActionFailed,"Disconnect error");
 
