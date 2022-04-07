@@ -38,6 +38,8 @@ var ClientMessageAction;
     ClientMessageAction["Reconnect"] = "reconnect";
     ClientMessageAction["Logout"] = "logout";
     ClientMessageAction["CloseAndSave"] = "close_and_save";
+    ClientMessageAction["Disconnect"] = "disconnect";
+    ClientMessageAction["GetDeviceInfo"] = "get_device_info";
 })(ClientMessageAction || (ClientMessageAction = {}));
 ;
 var ServerMessageAction;
@@ -59,6 +61,7 @@ var ServerMessageAction;
     ServerMessageAction["ClientDisconnected"] = "client_disconnected";
     ServerMessageAction["LogoutOK"] = "logout_ok";
     ServerMessageAction["LogoutError"] = "logout_error";
+    ServerMessageAction["DeviceInfo"] = "device_info";
 })(ServerMessageAction || (ServerMessageAction = {}));
 var WSErrorCode;
 (function (WSErrorCode) {
@@ -107,6 +110,10 @@ function wsOnMessage(ws, msg) {
                 return saveConnectAndCloseWS(ws, m);
             case ClientMessageAction.Auth:
                 return responseOk(ws, ServerMessageAction.AuthOK);
+            case ClientMessageAction.Disconnect:
+                return disconnectSession(ws, m);
+            case ClientMessageAction.GetDeviceInfo:
+                return getDeviceInfo(ws);
         }
         return responseOk(ws, ServerMessageAction.InvalidAction, 'Unknown Action');
     });
@@ -124,7 +131,7 @@ function connectWA(ws, msg) {
         catch (e) {
             return responseError(ws, ServerMessageAction.FatalError, "Error to close old session");
         }
-        (0, start_1.startVenom)(sessionName, {}, (client) => { venomOnConnected(ws, client); }, (e) => { venomOnError(ws, e); }, (data) => { venomOnQRCodeUpdate(ws, data); }, (data) => {
+        (0, start_1.startVenom)(sessionName, { logQR: true }, (client) => { venomOnConnected(ws, client); }, (e) => { venomOnError(ws, e); }, (data) => { venomOnQRCodeUpdate(ws, data); }, (data) => {
             venomBrowserInfo(sessionName, data);
         });
     });
@@ -134,6 +141,21 @@ function venomOnConnected(ws, client) {
         responseOk(ws, ServerMessageAction.Connected);
         setConnectionStatus(ws, ConnectionStatus.Connected);
         ws.venomClient = client;
+        getDeviceInfo(ws);
+    });
+}
+function getDeviceInfo(ws) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (ws.connection_status != ConnectionStatus.Connected)
+            return responseOk(ws, ServerMessageAction.ActionFailed, "Must have connected status, current status: " + ws.connection_status);
+        responseOk(ws, ServerMessageAction.Processing, "Getting Device Info");
+        try {
+            const info = yield ws.venomClient.getHostDevice();
+            return responseOk(ws, ServerMessageAction.DeviceInfo, "", info);
+        }
+        catch (e) {
+            return responseOk(ws, ServerMessageAction.ActionFailed, "Get Device Info Error");
+        }
     });
 }
 function venomOnError(ws, error) {
@@ -258,6 +280,21 @@ function saveConnectAndCloseWS(ws, msg) {
         }
         catch (e) {
             responseOk(ws, ServerMessageAction.ActionFailed, "I_E", e);
+        }
+    });
+}
+function disconnectSession(ws, msg) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (ws.connection_status !== ConnectionStatus.Connected) {
+            return responseOk(ws, ServerMessageAction.ActionFailed, "WS Not Connected");
+        }
+        try {
+            yield ws.venomClient.logout();
+            setConnectionStatus(ws, ConnectionStatus.Waiting);
+            return responseOk(ws, ServerMessageAction.ActionOK, "Desconected");
+        }
+        catch (e) {
+            return responseError(ws, ServerMessageAction.ActionFailed, "Disconnect error");
         }
     });
 }
