@@ -84,7 +84,7 @@ function wsOnMessage(ws, msg) {
             return;
         let m = {};
         try {
-            let m = JSON.parse(msg);
+            m = JSON.parse(msg);
         }
         catch (e) {
             return responseError(ws, "Message must be JSON string", "");

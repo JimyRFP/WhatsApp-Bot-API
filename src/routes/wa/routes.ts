@@ -66,7 +66,7 @@ async function wsOnMessage(ws:any,msg:any){
       return;
     let m:any={};  
     try{  
-       let m=JSON.parse(msg);
+       m=JSON.parse(msg);
     }catch(e){
        return responseError(ws,"Message must be JSON string","");
     }
