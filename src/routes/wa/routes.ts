@@ -108,6 +108,7 @@ async function connectWA(ws:any,msg:any){
    setConnectionStatus(ws,ConnectionStatus.Connecting);
    responseOk(ws,ServerMessageAction.Connecting,'Waiting Connection');
    const sessionName=getVenomSessionName(ws.userId,1);
+   ws.sessionName=sessionName;
    try{
      await killProcessBySessionName(sessionName);
    }catch(e){
@@ -123,7 +124,7 @@ async function connectWA(ws:any,msg:any){
 
 async function venomOnConnected(ws:any,client:any){
     if(global.venomserver_onconnected)
-      global.venomserver_onconnected(client);
+      global.venomserver_onconnected(client,ws);
     responseOk(ws,ServerMessageAction.Connected);
     setConnectionStatus(ws,ConnectionStatus.Connected);
     ws.venomClient=client;
