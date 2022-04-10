@@ -8,8 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateClientDeviceInfoBySessionName = exports.setGlobalVenomClient = exports.getGlobalVenomClientBySessionName = void 0;
+exports.destroySession = exports.updateClientDeviceInfoBySessionName = exports.setGlobalVenomClient = exports.getGlobalVenomClientBySessionName = void 0;
+const path_1 = __importDefault(require("path"));
+const removedir_1 = require("../../utils/so/removedir");
 function getGlobalVenomClientBySessionName(sessionName) {
     if (!global.venomClients)
         return false;
@@ -53,3 +58,29 @@ function updateClientDeviceInfoBySessionName(sessionName) {
     });
 }
 exports.updateClientDeviceInfoBySessionName = updateClientDeviceInfoBySessionName;
+function destroySession(sessionName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        if (!global.venomClients)
+            return false;
+        let newClients = [];
+        let removeClient = null;
+        for (let i = 0; i < global.venomClients.length; i++) {
+            if (global.venomClients[i].sessionName === sessionName) {
+                removeClient = global.venomClients[i];
+                continue;
+            }
+            newClients.push(global.venomClients[i]);
+        }
+        global.venomClients = newClients;
+        if (!removeClient)
+            return;
+        try {
+            yield (0, removedir_1.removeDir)(path_1.default.join(__dirname, 'tokens', sessionName));
+            removeClient.client.logout();
+        }
+        catch (e) {
+            throw e;
+        }
+    });
+}
+exports.destroySession = destroySession;
