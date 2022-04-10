@@ -12,7 +12,7 @@ export function startVenom(sessionName:string,options:any={},onConnected:any,onE
 
       },
       {
-        logQR:options.logQR?options.logQR:false,
+        logQR:options.logQR?options.logQR:true,
         disableSpins:options.disableSpins?options.disableSpins:true,
         disableWelcome:options.disableWelcome?options.disableWelcome:true,
         updateLogs:options.updateLogs?options.updateLogs:false,

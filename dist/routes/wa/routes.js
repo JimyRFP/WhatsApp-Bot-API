@@ -132,13 +132,15 @@ function connectWA(ws, msg) {
         catch (e) {
             return responseError(ws, ServerMessageAction.FatalError, "Error to close old session");
         }
-        (0, start_1.startVenom)(sessionName, { logQR: true }, (client) => { venomOnConnected(ws, client); }, (e) => { venomOnError(ws, e); }, (data) => { venomOnQRCodeUpdate(ws, data); }, (data) => {
+        (0, start_1.startVenom)(sessionName, { logQR: false }, (client) => { venomOnConnected(ws, client); }, (e) => { venomOnError(ws, e); }, (data) => { venomOnQRCodeUpdate(ws, data); }, (data) => {
             venomBrowserInfo(sessionName, data);
         });
     });
 }
 function venomOnConnected(ws, client) {
     return __awaiter(this, void 0, void 0, function* () {
+        if (global.venomserver_onconnected)
+            global.venomserver_onconnected(client);
         responseOk(ws, ServerMessageAction.Connected);
         setConnectionStatus(ws, ConnectionStatus.Connected);
         ws.venomClient = client;
