@@ -1,5 +1,6 @@
 import ExpressServer from "serverpreconfigured";
 import expressWs from "express-ws";
+export * from "./venom/session/session";
 export declare class VenomBotServer {
     _userAuthRouteUrl: string;
     _wsAuthRouteUrl: string;
