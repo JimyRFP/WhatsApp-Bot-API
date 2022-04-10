@@ -1,3 +1,3 @@
 export function getVenomSessionName(userId:number,sessionNumber:number){
-    return `UserId ${userId} Bot ${sessionNumber}`;
+    return `UserId_${userId}_Bot_${sessionNumber}`;
 }
