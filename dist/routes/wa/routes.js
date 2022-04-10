@@ -18,6 +18,7 @@ const process_3 = require("../../utils/so/process");
 const response_1 = require("../../utils/response/response");
 const text_1 = require("../../venom/text");
 const serverpreconfigured_1 = require("serverpreconfigured");
+const clientControl_1 = require("../../venom/control/clientControl");
 var ConnectionStatus;
 (function (ConnectionStatus) {
     ConnectionStatus["Waiting"] = "Waiting";
@@ -140,11 +141,12 @@ function connectWA(ws, msg) {
 }
 function venomOnConnected(ws, client) {
     return __awaiter(this, void 0, void 0, function* () {
+        (0, clientControl_1.setGlobalVenomClient)(ws.sessionName, client);
         if (global.venomserver_onconnected)
             global.venomserver_onconnected(client, ws);
-        responseOk(ws, ServerMessageAction.Connected);
-        setConnectionStatus(ws, ConnectionStatus.Connected);
         ws.venomClient = client;
+        setConnectionStatus(ws, ConnectionStatus.Connected);
+        responseOk(ws, ServerMessageAction.Connected);
         getDeviceInfo(ws);
     });
 }

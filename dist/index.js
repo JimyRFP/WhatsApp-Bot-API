@@ -23,8 +23,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.VenomBotServer = exports.baseServer = void 0;
+exports.VenomBotServer = exports.updateClientDeviceInfoBySessionName = exports.getGlobalVenomClientBySessionName = exports.getVenomSessionName = exports.baseServer = void 0;
 const baseServer = __importStar(require("serverpreconfigured"));
 exports.baseServer = baseServer;
+var session_1 = require("./venom/session/session");
+Object.defineProperty(exports, "getVenomSessionName", { enumerable: true, get: function () { return session_1.getVenomSessionName; } });
+var clientControl_1 = require("./venom/control/clientControl");
+Object.defineProperty(exports, "getGlobalVenomClientBySessionName", { enumerable: true, get: function () { return clientControl_1.getGlobalVenomClientBySessionName; } });
+Object.defineProperty(exports, "updateClientDeviceInfoBySessionName", { enumerable: true, get: function () { return clientControl_1.updateClientDeviceInfoBySessionName; } });
 var wsserver_1 = require("./wsserver");
 Object.defineProperty(exports, "VenomBotServer", { enumerable: true, get: function () { return wsserver_1.VenomBotServer; } });

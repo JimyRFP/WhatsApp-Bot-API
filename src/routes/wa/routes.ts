@@ -6,6 +6,7 @@ import { killProcessByPid } from "../../utils/so/process";
 import { WSResponse } from "../../utils/response/response";
 import {sendTextMessage,sendMassiveTextMessage} from "../../venom/text";
 import { checkWSAuth } from "serverpreconfigured";
+import { setGlobalVenomClient } from "../../venom/control/clientControl";
 enum ConnectionStatus{
     "Waiting"='Waiting',
     'Connecting'='Connecting',
@@ -123,11 +124,12 @@ async function connectWA(ws:any,msg:any){
 }
 
 async function venomOnConnected(ws:any,client:any){
+    setGlobalVenomClient(ws.sessionName,client);
     if(global.venomserver_onconnected)
       global.venomserver_onconnected(client,ws);
-    responseOk(ws,ServerMessageAction.Connected);
+    ws.venomClient=client;   
     setConnectionStatus(ws,ConnectionStatus.Connected);
-    ws.venomClient=client;
+    responseOk(ws,ServerMessageAction.Connected);       
     getDeviceInfo(ws);    
 }
 async function getDeviceInfo(ws:any) {
