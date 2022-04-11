@@ -53,10 +53,9 @@ export async function destroySession(sessionName:string){
          newClients.push(global.venomClients[i]);            
       }
       global.venomClients=newClients;
-      if(!removeClient)
-         return;
       try{
-         removeClient.client.logout();
+         if(removeClient)
+            await removeClient.client.logout();
       }catch(e){
       }
       try{

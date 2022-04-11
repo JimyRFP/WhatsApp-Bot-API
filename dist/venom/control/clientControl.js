@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.destroySession = exports.updateClientDeviceInfoBySessionName = exports.setGlobalVenomClient = exports.getGlobalVenomClientBySessionName = void 0;
+const process_1 = require("../process/process");
 const path_1 = __importDefault(require("path"));
 const removedir_1 = require("../../utils/so/removedir");
 function getGlobalVenomClientBySessionName(sessionName) {
@@ -72,11 +73,15 @@ function destroySession(sessionName) {
             newClients.push(global.venomClients[i]);
         }
         global.venomClients = newClients;
-        if (!removeClient)
-            return;
         try {
-            yield (0, removedir_1.removeDir)(path_1.default.join(__dirname, 'tokens', sessionName));
-            removeClient.client.logout();
+            if (removeClient)
+                yield removeClient.client.logout();
+        }
+        catch (e) {
+        }
+        try {
+            yield (0, process_1.killProcessBySessionName)(sessionName);
+            yield (0, removedir_1.removeDir)(path_1.default.join(process.cwd(), 'tokens', sessionName));
         }
         catch (e) {
             throw e;
