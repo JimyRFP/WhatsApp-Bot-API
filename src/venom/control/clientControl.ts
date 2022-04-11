@@ -1,5 +1,6 @@
 import { venomClient } from "../../types/index";
 import { getHostDevice } from "../hostdevice";
+import { killProcessBySessionName } from "../process/process";
 import path from 'path';
 import { removeDir } from "../../utils/so/removedir";
 export function getGlobalVenomClientBySessionName(sessionName:string):venomClient|false{
@@ -55,8 +56,12 @@ export async function destroySession(sessionName:string){
       if(!removeClient)
          return;
       try{
-         await removeDir(path.join(__dirname,'tokens',sessionName));
          removeClient.client.logout();
+      }catch(e){
+      }
+      try{
+         await killProcessBySessionName(sessionName);
+         await removeDir(path.join(process.cwd(),'tokens',sessionName));
       }catch(e){
          throw e;
       }
