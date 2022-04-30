@@ -1,6 +1,6 @@
 {
   "name": "venom-bot-server",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Backend server to control whatsapp bot by websocket",
   "main": "dist/index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "nodemon": "^2.0.15",
     "sequelize": "^7.0.0-next.1",
     "sequelize-cli": "^6.4.1",
-    "serverpreconfigured": "^1.1.1",
+    "serverpreconfigured": "^1.1.2",
     "sharp": "^0.30.3",
     "typescript": "^4.6.2",
     "venom-bot": "^4.0.9"
