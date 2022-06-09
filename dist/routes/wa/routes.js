@@ -11,10 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.router = void 0;
 const session_1 = require("../../venom/session/session");
-const process_1 = require("../../venom/process/process");
 const start_1 = require("../../venom/start");
-const process_2 = require("../../venom/process/process");
-const process_3 = require("../../utils/so/process");
 const response_1 = require("../../utils/response/response");
 const text_1 = require("../../venom/text");
 const serverpreconfigured_1 = require("serverpreconfigured");
@@ -129,21 +126,16 @@ function connectWA(ws, msg) {
         const sessionName = (0, session_1.getVenomSessionName)(ws.userId, 1);
         ws.sessionName = sessionName;
         try {
-            yield (0, process_1.killProcessBySessionName)(sessionName);
+            yield (0, start_1.killSessionAndStartVenomSafe)(sessionName, { logQR: false }, (client) => { venomOnConnected(ws, client); }, (e) => { venomOnError(ws, e); }, (data) => { venomOnQRCodeUpdate(ws, data); });
         }
         catch (e) {
             return responseError(ws, ServerMessageAction.FatalError, "Error to close old session");
         }
-        (0, start_1.startVenom)(sessionName, { logQR: false }, (client) => { venomOnConnected(ws, client); }, (e) => { venomOnError(ws, e); }, (data) => { venomOnQRCodeUpdate(ws, data); }, (data) => {
-            venomBrowserInfo(sessionName, data);
-        });
     });
 }
 function venomOnConnected(ws, client) {
     return __awaiter(this, void 0, void 0, function* () {
         (0, clientControl_1.setGlobalVenomClient)(ws.sessionName, client);
-        if (global.venomserver_onconnected)
-            global.venomserver_onconnected(client, ws);
         ws.venomClient = client;
         setConnectionStatus(ws, ConnectionStatus.Connected);
         responseOk(ws, ServerMessageAction.Connected);
@@ -173,17 +165,6 @@ function venomOnError(ws, error) {
 function venomOnQRCodeUpdate(ws, data) {
     return __awaiter(this, void 0, void 0, function* () {
         responseOk(ws, ServerMessageAction.UpdateQRCode, '', data);
-    });
-}
-function venomBrowserInfo(sessionName, data) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const pid = data.browser.process().pid;
-        try {
-            yield (0, process_2.updateProcessDataBySessionName)(sessionName, { pid });
-        }
-        catch (e) {
-            (0, process_3.killProcessByPid)(pid);
-        }
     });
 }
 function sendTextMessageByWS(ws, msg) {

@@ -12,10 +12,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.destroySession = exports.updateClientDeviceInfoBySessionName = exports.setGlobalVenomClient = exports.getGlobalVenomClientBySessionName = void 0;
+exports.reconnectClientBySession = exports.destroySession = exports.updateClientDeviceInfoBySessionName = exports.setGlobalVenomClient = exports.getGlobalVenomClientBySessionName = void 0;
 const process_1 = require("../process/process");
 const path_1 = __importDefault(require("path"));
 const removedir_1 = require("../../utils/so/removedir");
+const start_1 = require("../start");
 function getGlobalVenomClientBySessionName(sessionName) {
     if (!global.venomClients)
         return false;
@@ -89,3 +90,34 @@ function destroySession(sessionName) {
     });
 }
 exports.destroySession = destroySession;
+function reconnectClientBySession(sessionName, options = {}) {
+    return __awaiter(this, void 0, void 0, function* () {
+        return new Promise((resolve, reject) => {
+            try {
+                (0, start_1.killSessionAndStartVenom)(sessionName, options, onConnected, onError, onQRCodeUpdate, (data) => (0, start_1.updateBrowserInfo)(sessionName, data));
+            }
+            catch (e) {
+                throw reject(e);
+            }
+            function onConnected(client) {
+                let venomClient = setGlobalVenomClient(sessionName, client);
+                resolve(venomClient);
+            }
+            function onError(error) {
+                reject(error);
+            }
+            function onQRCodeUpdate(data) {
+                return __awaiter(this, void 0, void 0, function* () {
+                    try {
+                        yield (0, process_1.killProcessBySessionName)(sessionName);
+                        reject("Need Scan QRCode");
+                    }
+                    catch (e) {
+                        reject(e);
+                    }
+                });
+            }
+        });
+    });
+}
+exports.reconnectClientBySession = reconnectClientBySession;

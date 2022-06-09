@@ -26,9 +26,11 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.VenomBotServer = exports.getVenomSessionName = exports.baseServer = void 0;
+exports.VenomBotServer = exports.getVenomSessionName = exports.baseServer = exports.killSessionAndStartVenomSafe = void 0;
 const baseServer = __importStar(require("serverpreconfigured"));
 exports.baseServer = baseServer;
+var start_1 = require("./venom/start");
+Object.defineProperty(exports, "killSessionAndStartVenomSafe", { enumerable: true, get: function () { return start_1.killSessionAndStartVenomSafe; } });
 var session_1 = require("./venom/session/session");
 Object.defineProperty(exports, "getVenomSessionName", { enumerable: true, get: function () { return session_1.getVenomSessionName; } });
 __exportStar(require("./venom/control/clientControl"), exports);

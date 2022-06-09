@@ -1,8 +1,5 @@
 import { getVenomSessionName } from "../../venom/session/session";
-import { killProcessBySessionName } from "../../venom/process/process";
-import { startVenom } from "../../venom/start";
-import { updateProcessDataBySessionName } from "../../venom/process/process";
-import { killProcessByPid } from "../../utils/so/process";
+import { killSessionAndStartVenomSafe } from "../../venom/start";
 import { WSResponse } from "../../utils/response/response";
 import {sendTextMessage,sendMassiveTextMessage} from "../../venom/text";
 import { checkWSAuth } from "serverpreconfigured";
@@ -111,22 +108,20 @@ async function connectWA(ws:any,msg:any){
    const sessionName=getVenomSessionName(ws.userId,1);
    ws.sessionName=sessionName;
    try{
-     await killProcessBySessionName(sessionName);
+     await killSessionAndStartVenomSafe(sessionName,{logQR:false},
+                                       (client:any)=>{venomOnConnected(ws,client)},
+                                       (e:any)=>{venomOnError(ws,e)},
+                                       (data:any)=>{venomOnQRCodeUpdate(ws,data)}
+     );
    }catch(e){
       return responseError(ws,ServerMessageAction.FatalError,"Error to close old session");
    }
-   startVenom(sessionName,{logQR:false},(client:any)=>{venomOnConnected(ws,client)},
-                              (e:any)=>{venomOnError(ws,e)},
-                              (data:any)=>{venomOnQRCodeUpdate(ws,data)},
-                              (data:any)=>{venomBrowserInfo(sessionName,data)
-                            });
+   
 
 }
 
 async function venomOnConnected(ws:any,client:any){
     setGlobalVenomClient(ws.sessionName,client);
-    if(global.venomserver_onconnected)
-      global.venomserver_onconnected(client,ws);
     ws.venomClient=client;   
     setConnectionStatus(ws,ConnectionStatus.Connected);
     responseOk(ws,ServerMessageAction.Connected);       
@@ -150,14 +145,6 @@ async function venomOnError(ws:any,error:any){
 }
 async function venomOnQRCodeUpdate(ws:any,data:any){
    responseOk(ws,ServerMessageAction.UpdateQRCode,'',data);
-}
-async function venomBrowserInfo(sessionName:string,data:any){
-    const pid=data.browser.process().pid;
-    try{
-      await updateProcessDataBySessionName(sessionName,{pid});
-    }catch(e){
-        killProcessByPid(pid);
-    }
 }
 
 async function sendTextMessageByWS(ws:any,msg:any) {

@@ -1,8 +1,8 @@
 import { venomClient } from "../../types/index";
-import { getHostDevice } from "../hostdevice";
 import { killProcessBySessionName } from "../process/process";
 import path from 'path';
 import { removeDir } from "../../utils/so/removedir";
+import { killSessionAndStartVenom, updateBrowserInfo } from "../start";
 export function getGlobalVenomClientBySessionName(sessionName:string):venomClient|false{
   if(!global.venomClients)
     return false;
@@ -64,4 +64,37 @@ export async function destroySession(sessionName:string){
       }catch(e){
          throw e;
       }
+}
+
+
+export async function reconnectClientBySession(sessionName:string,options:any={}){
+   return new Promise((resolve,reject)=>{
+      try{
+         killSessionAndStartVenom(sessionName,options,
+                                  onConnected,
+                                  onError,
+                                  onQRCodeUpdate,
+                                  (data:any)=>updateBrowserInfo(sessionName,data),
+                                  );
+      }catch(e){
+         throw reject(e);
+      }
+      function onConnected(client:any){
+         let venomClient=setGlobalVenomClient(sessionName,client);
+         resolve(venomClient);
+     }
+     function onError(error:any){
+         reject(error);
+     }
+     async function onQRCodeUpdate(data:any){
+         try{
+            await killProcessBySessionName(sessionName);
+            reject("Need Scan QRCode");
+         }catch(e){
+            reject(e);
+         }
+     }
+
+   });
+   
 }
