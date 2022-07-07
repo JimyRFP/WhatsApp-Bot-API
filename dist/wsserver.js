@@ -17,7 +17,7 @@ class VenomBotServer {
         this._expressServer.initWSAuthSystem(this._wsAuthRouteUrl);
         this._app = this._expressServer.getApp();
         this._wsInstance = (0, ws_1.initWebSocket)(this._app);
-        (0, routes_1.router)(this._whatsAppWSRouteUrl, this._app);
+        (0, routes_1.router)(this._whatsAppWSRouteUrl, this._app, options.venomOptions || {});
     }
     listen(port) {
         this._expressServer.listen(port);

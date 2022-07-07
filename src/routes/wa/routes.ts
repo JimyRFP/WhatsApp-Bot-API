@@ -56,8 +56,9 @@ enum WSErrorCode{
     ActionFail,
 };
 
-export function router(dir:string,app:any){
+export function router(dir:string,app:any,venomOptions:any={}){
         app.ws(dir+'/wa_connect',async (ws:any,req:any)=>{
+            ws.venomOptions=venomOptions;
             setConnectionStatus(ws,ConnectionStatus.Waiting);
             ws.on('message',(msg:any)=>{wsOnMessage(ws,msg)});
         });
@@ -108,7 +109,7 @@ async function connectWA(ws:any,msg:any){
    const sessionName=getVenomSessionName(ws.userId,1);
    ws.sessionName=sessionName;
    try{
-     await killSessionAndStartVenomSafe(sessionName,{logQR:false},
+     await killSessionAndStartVenomSafe(sessionName,ws.venomOptions,
                                        (client:any)=>{venomOnConnected(ws,client)},
                                        (e:any)=>{venomOnError(ws,e)},
                                        (data:any)=>{venomOnQRCodeUpdate(ws,data)}

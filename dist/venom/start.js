@@ -16,7 +16,6 @@ const process_2 = require("./process/process");
 const process_3 = require("../utils/so/process");
 function startVenom(sessionName, options = {}, onConnected, onError, onQRCodeUpdate, browserInfo) {
     const useOptions = getOptions();
-    console.log(useOptions);
     venom.create(sessionName, (base64Qrimg, asciiQR, attempts, urlCode) => {
         if (onQRCodeUpdate == undefined)
             return;
@@ -38,6 +37,7 @@ function startVenom(sessionName, options = {}, onConnected, onError, onQRCodeUpd
             disableWelcome: true,
             updateLogs: false,
             headless: true,
+            multidevice: true,
         };
         let useOptions = options || {};
         for (var [key, value] of Object.entries(defaultOptions)) {

@@ -73,8 +73,9 @@ var WSErrorCode;
     WSErrorCode[WSErrorCode["ActionFail"] = 6] = "ActionFail";
 })(WSErrorCode || (WSErrorCode = {}));
 ;
-function router(dir, app) {
+function router(dir, app, venomOptions = {}) {
     app.ws(dir + '/wa_connect', (ws, req) => __awaiter(this, void 0, void 0, function* () {
+        ws.venomOptions = venomOptions;
         setConnectionStatus(ws, ConnectionStatus.Waiting);
         ws.on('message', (msg) => { wsOnMessage(ws, msg); });
     }));
@@ -126,7 +127,7 @@ function connectWA(ws, msg) {
         const sessionName = (0, session_1.getVenomSessionName)(ws.userId, 1);
         ws.sessionName = sessionName;
         try {
-            yield (0, start_1.killSessionAndStartVenomSafe)(sessionName, { logQR: false }, (client) => { venomOnConnected(ws, client); }, (e) => { venomOnError(ws, e); }, (data) => { venomOnQRCodeUpdate(ws, data); });
+            yield (0, start_1.killSessionAndStartVenomSafe)(sessionName, ws.venomOptions, (client) => { venomOnConnected(ws, client); }, (e) => { venomOnError(ws, e); }, (data) => { venomOnQRCodeUpdate(ws, data); });
         }
         catch (e) {
             return responseError(ws, ServerMessageAction.FatalError, "Error to close old session");

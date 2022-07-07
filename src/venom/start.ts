@@ -4,7 +4,6 @@ import { updateProcessDataBySessionName } from "./process/process";
 import { killProcessByPid } from "../utils/so/process";
 export function startVenom(sessionName:string,options:any={},onConnected:any,onError:any,onQRCodeUpdate:any,browserInfo:any){
   const useOptions=getOptions();
-  console.log(useOptions);
   venom.create(
       sessionName,
       (base64Qrimg:any, asciiQR:any, attempts:any, urlCode:any) => {
@@ -36,6 +35,7 @@ export function startVenom(sessionName:string,options:any={},onConnected:any,onE
         disableWelcome:true,
         updateLogs:false,
         headless:true,
+        multidevice:true,
      };
      let useOptions=options||{};
      for (var [key, value] of Object.entries(defaultOptions)) {

@@ -1,1 +1,1 @@
-export declare function router(dir: string, app: any): void;
+export declare function router(dir: string, app: any, venomOptions?: any): void;
