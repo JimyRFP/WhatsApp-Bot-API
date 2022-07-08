@@ -140,7 +140,6 @@ function venomOnConnected(ws, client) {
         ws.venomClient = client;
         setConnectionStatus(ws, ConnectionStatus.Connected);
         responseOk(ws, ServerMessageAction.Connected);
-        getDeviceInfo(ws);
     });
 }
 function getDeviceInfo(ws) {

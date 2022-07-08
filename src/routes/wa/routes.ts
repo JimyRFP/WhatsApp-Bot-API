@@ -112,8 +112,8 @@ async function connectWA(ws:any,msg:any){
      await killSessionAndStartVenomSafe(sessionName,ws.venomOptions,
                                        (client:any)=>{venomOnConnected(ws,client)},
                                        (e:any)=>{venomOnError(ws,e)},
-                                       (data:any)=>{venomOnQRCodeUpdate(ws,data)}
-     );
+                                       (data:any)=>{venomOnQRCodeUpdate(ws,data)});                        
+     
    }catch(e){
       return responseError(ws,ServerMessageAction.FatalError,"Error to close old session");
    }
@@ -125,8 +125,7 @@ async function venomOnConnected(ws:any,client:any){
     setGlobalVenomClient(ws.sessionName,client);
     ws.venomClient=client;   
     setConnectionStatus(ws,ConnectionStatus.Connected);
-    responseOk(ws,ServerMessageAction.Connected);       
-    getDeviceInfo(ws);    
+    responseOk(ws,ServerMessageAction.Connected);        
 }
 async function getDeviceInfo(ws:any) {
     if(ws.connection_status!=ConnectionStatus.Connected)
