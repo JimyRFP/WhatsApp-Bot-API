@@ -16,6 +16,9 @@ const response_1 = require("../../utils/response/response");
 const text_1 = require("../../venom/text");
 const serverpreconfigured_1 = require("serverpreconfigured");
 const clientControl_1 = require("../../venom/control/clientControl");
+const __1 = require("../..");
+const DEBUG = true;
+const debugMessage = __1.baseServer.debugMessage;
 var ConnectionStatus;
 (function (ConnectionStatus) {
     ConnectionStatus["Waiting"] = "Waiting";
@@ -76,6 +79,7 @@ var WSErrorCode;
 function router(dir, app, venomOptions = {}) {
     app.ws(dir + '/wa_connect', (ws, req) => __awaiter(this, void 0, void 0, function* () {
         ws.venomOptions = venomOptions;
+        debugMessage(DEBUG, "Start venom websocket connection", { data: { message: "venomOptions", venomOptions } });
         setConnectionStatus(ws, ConnectionStatus.Waiting);
         ws.on('message', (msg) => { wsOnMessage(ws, msg); });
     }));
@@ -94,7 +98,6 @@ function wsOnMessage(ws, msg) {
         }
         if (!m.action)
             return responseOk(ws, ServerMessageAction.ActionRequired, "Must have 'action' param");
-        yield checkClientIsConnected(ws);
         switch (m.action) {
             case ClientMessageAction.ConnectWA:
                 return connectWA(ws, m);
@@ -130,12 +133,14 @@ function connectWA(ws, msg) {
             yield (0, start_1.killSessionAndStartVenomSafe)(sessionName, ws.venomOptions, (client) => { venomOnConnected(ws, client); }, (e) => { venomOnError(ws, e); }, (data) => { venomOnQRCodeUpdate(ws, data); });
         }
         catch (e) {
+            debugMessage(DEBUG, "Connet venom error", { data: { error: e } });
             return responseError(ws, ServerMessageAction.FatalError, "Error to close old session");
         }
     });
 }
 function venomOnConnected(ws, client) {
     return __awaiter(this, void 0, void 0, function* () {
+        debugMessage(DEBUG, "Connect Venom OK");
         (0, clientControl_1.setGlobalVenomClient)(ws.sessionName, client);
         ws.venomClient = client;
         setConnectionStatus(ws, ConnectionStatus.Connected);
@@ -148,7 +153,10 @@ function getDeviceInfo(ws) {
             return responseOk(ws, ServerMessageAction.ActionFailed, "Must have connected status, current status: " + ws.connection_status);
         responseOk(ws, ServerMessageAction.Processing, "Getting Device Info");
         try {
-            const info = yield ws.venomClient.getHostDevice();
+            let info = yield ws.venomClient.getHostDevice();
+            if (!info.id) {
+                info = yield ws.venomClient.getHostDeviceFast();
+            }
             return responseOk(ws, ServerMessageAction.DeviceInfo, "", info);
         }
         catch (e) {
@@ -207,23 +215,6 @@ function responseOk(ws, message, errorMessage = '', data = {}) {
 function responseError(ws, message, errorMessage, data = {}) {
     ws.send((0, response_1.WSResponse)(false, message, errorMessage, data));
     ws.terminate();
-}
-function checkClientIsConnected(ws) {
-    return __awaiter(this, void 0, void 0, function* () {
-        if (ws.connection_status == ConnectionStatus.Waiting || ws.connection_status == ConnectionStatus.Connecting)
-            return;
-        try {
-            if (!(yield ws.venomClient.isConnected())) {
-                setConnectionStatus(ws, ConnectionStatus.Disconnected);
-                return responseOk(ws, ServerMessageAction.ClientDisconnected, "Check your phone connection, or reconnect");
-            }
-            setConnectionStatus(ws, ConnectionStatus.Connected);
-        }
-        catch (e) {
-            setConnectionStatus(ws, ConnectionStatus.Disconnected);
-            return responseOk(ws, ServerMessageAction.ClientDisconnected, "Check your phone connection, or reconnect");
-        }
-    });
 }
 function reconnectClient(ws, msg) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -286,5 +277,6 @@ function disconnectSession(ws, msg) {
     });
 }
 function setConnectionStatus(ws, status) {
+    debugMessage(DEBUG, "Set connection Statys", { data: { status } });
     ws.connection_status = status;
 }

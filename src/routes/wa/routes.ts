@@ -4,6 +4,9 @@ import { WSResponse } from "../../utils/response/response";
 import {sendTextMessage,sendMassiveTextMessage} from "../../venom/text";
 import { checkWSAuth } from "serverpreconfigured";
 import { setGlobalVenomClient } from "../../venom/control/clientControl";
+import { baseServer } from "../..";
+const DEBUG=true;
+const debugMessage=baseServer.debugMessage;
 enum ConnectionStatus{
     "Waiting"='Waiting',
     'Connecting'='Connecting',
@@ -59,6 +62,9 @@ enum WSErrorCode{
 export function router(dir:string,app:any,venomOptions:any={}){
         app.ws(dir+'/wa_connect',async (ws:any,req:any)=>{
             ws.venomOptions=venomOptions;
+            debugMessage(DEBUG,
+                        "Start venom websocket connection",
+                        {data:{message:"venomOptions",venomOptions}});
             setConnectionStatus(ws,ConnectionStatus.Waiting);
             ws.on('message',(msg:any)=>{wsOnMessage(ws,msg)});
         });
@@ -75,7 +81,6 @@ async function wsOnMessage(ws:any,msg:any){
     }
     if(!m.action)
       return responseOk(ws,ServerMessageAction.ActionRequired,"Must have 'action' param");
-        await checkClientIsConnected(ws);
         switch(m.action){
             case ClientMessageAction.ConnectWA:
                return connectWA(ws,m);  
@@ -115,6 +120,7 @@ async function connectWA(ws:any,msg:any){
                                        (data:any)=>{venomOnQRCodeUpdate(ws,data)});                        
      
    }catch(e){
+      debugMessage(DEBUG,"Connet venom error",{data:{error:e}})
       return responseError(ws,ServerMessageAction.FatalError,"Error to close old session");
    }
    
@@ -122,6 +128,7 @@ async function connectWA(ws:any,msg:any){
 }
 
 async function venomOnConnected(ws:any,client:any){
+    debugMessage(DEBUG,"Connect Venom OK");
     setGlobalVenomClient(ws.sessionName,client);
     ws.venomClient=client;   
     setConnectionStatus(ws,ConnectionStatus.Connected);
@@ -132,7 +139,10 @@ async function getDeviceInfo(ws:any) {
          return responseOk(ws,ServerMessageAction.ActionFailed,"Must have connected status, current status: "+ws.connection_status);
     responseOk(ws,ServerMessageAction.Processing,"Getting Device Info");
     try{
-        const info=await ws.venomClient.getHostDevice(); 
+        let info=await ws.venomClient.getHostDevice(); 
+        if(!info.id){
+            info=await ws.venomClient.getHostDeviceFast();
+        }
         return responseOk(ws,ServerMessageAction.DeviceInfo,"",info);
      }catch(e){
         return responseOk(ws,ServerMessageAction.ActionFailed,"Get Device Info Error");
@@ -188,20 +198,6 @@ function responseError(ws:any,message:string,errorMessage:string,data:any={}){
   ws.terminate();
 }
 
-async function checkClientIsConnected(ws:any){
-    if(ws.connection_status==ConnectionStatus.Waiting || ws.connection_status==ConnectionStatus.Connecting)
-       return;
-    try{
-        if(!(await ws.venomClient.isConnected())){
-            setConnectionStatus(ws,ConnectionStatus.Disconnected);
-            return responseOk(ws,ServerMessageAction.ClientDisconnected,"Check your phone connection, or reconnect");
-        }
-        setConnectionStatus(ws,ConnectionStatus.Connected);
-     }catch(e){
-        setConnectionStatus(ws,ConnectionStatus.Disconnected); 
-        return responseOk(ws,ServerMessageAction.ClientDisconnected,"Check your phone connection, or reconnect");
-     }
-}
 
 async function reconnectClient(ws:any,msg:any){
     if(ws.connection_status==ConnectionStatus.Waiting || ws.connection_status==ConnectionStatus.Connecting)
@@ -252,6 +248,7 @@ async function disconnectSession(ws:any,msg:any){
     }
 }
 function setConnectionStatus(ws:any,status:ConnectionStatus){
+   debugMessage(DEBUG,"Set connection Statys",{data:{status}}) 
    ws.connection_status=status;
 }
 

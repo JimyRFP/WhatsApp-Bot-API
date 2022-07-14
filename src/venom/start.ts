@@ -1,4 +1,4 @@
-const venom=require('venom-bot');
+const venom=require('venom-bot-updated');
 import { killProcessBySessionName } from "./process/process";
 import { updateProcessDataBySessionName } from "./process/process";
 import { killProcessByPid } from "../utils/so/process";

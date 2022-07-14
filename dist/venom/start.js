@@ -10,7 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateBrowserInfo = exports.killSessionAndStartVenomSafe = exports.killSessionAndStartVenom = exports.startVenom = void 0;
-const venom = require('venom-bot');
+const venom = require('venom-bot-updated');
 const process_1 = require("./process/process");
 const process_2 = require("./process/process");
 const process_3 = require("../utils/so/process");
