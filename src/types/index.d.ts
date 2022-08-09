@@ -1,6 +1,7 @@
 export interface venomClient{
     client:any,
     deviceInfo:any,
+    removeOnMessage:false|any,
     sessionName:string,
 }
 

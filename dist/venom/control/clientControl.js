@@ -31,6 +31,7 @@ function setGlobalVenomClient(sessionName, client) {
     let venomClient = {
         sessionName: sessionName,
         client: client,
+        removeOnMessage: false,
         deviceInfo: false,
     };
     if (!global.venomClients)

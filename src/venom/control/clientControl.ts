@@ -16,6 +16,7 @@ export function setGlobalVenomClient(sessionName:string,client:any):venomClient{
      let venomClient:venomClient={
         sessionName:sessionName,
         client:client,
+        removeOnMessage:false,
         deviceInfo:false,
      };
      if(!global.venomClients)
@@ -28,6 +29,7 @@ export function setGlobalVenomClient(sessionName:string,client:any):venomClient{
      } 
      global.venomClients.push(venomClient);  
      return venomClient;
+
 }
 export async function updateClientDeviceInfoBySessionName(sessionName:string):Promise<venomClient|false>{
    let venomClient=getGlobalVenomClientBySessionName(sessionName);
