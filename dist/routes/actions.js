@@ -14,12 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.router = void 0;
 const serverpreconfigured_1 = require("serverpreconfigured");
-const clientControl_1 = require("../venom/control/clientControl");
-const session_1 = require("../venom/session/session");
 const express_1 = require("express");
 const filter_1 = require("../utils/response/filter");
 const getNumber_1 = require("../venom/utils/getNumber");
 const meta_sanitizer_1 = __importDefault(require("meta-sanitizer"));
+const clientControl_1 = require("../venom/control/clientControl");
 exports.router = (0, express_1.Router)();
 exports.router.post('/sendText', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -30,11 +29,7 @@ exports.router.post('/sendText', (req, res) => __awaiter(void 0, void 0, void 0,
         const filtered = (0, filter_1.filterBodyParams)(req, res, required, {});
         if (!filtered)
             return;
-        const client = (0, clientControl_1.getGlobalVenomClientBySessionName)((0, session_1.getVenomSessionName)(req.user.id, 1));
-        if (!client)
-            throw "unknown client";
-        if (!(yield client.client.isConnected()))
-            throw "is not connected";
+        const client = yield (0, clientControl_1.getClientAndCheckConnection)(req.user.id, 1);
         let result = yield client.client.sendText2(filtered.to, filtered.text);
         return res.send((0, serverpreconfigured_1.JSONResponse)(true, 0, '', result));
     }
@@ -54,13 +49,19 @@ exports.router.post('/sendVCard', (req, res) => __awaiter(void 0, void 0, void 0
         const filtered = (0, filter_1.filterBodyParams)(req, res, required, otherParams);
         if (!filtered)
             return;
-        const client = (0, clientControl_1.getGlobalVenomClientBySessionName)((0, session_1.getVenomSessionName)(req.user.id, 1));
-        if (!client)
-            throw "unknown client";
-        if (!(yield client.client.isConnected()))
-            throw "is not connected";
+        const client = yield (0, clientControl_1.getClientAndCheckConnection)(req.user.id, 1);
         let result = yield client.client.sendContactVcard(filtered.to, filtered.contact, filtered.name);
         return res.send((0, serverpreconfigured_1.JSONResponse)(true, 0, '', result));
+    }
+    catch (e) {
+        return res.status(500).send((0, serverpreconfigured_1.JSONResponse)(true, 0, "I-E", e));
+    }
+}));
+exports.router.post('/getContacts', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let client = yield (0, clientControl_1.getClientAndCheckConnection)(req.user.id, 1);
+        let contacts = yield client.client.getAllContacts();
+        return res.send((0, serverpreconfigured_1.JSONResponse)(true, 0, '', contacts));
     }
     catch (e) {
         return res.status(500).send((0, serverpreconfigured_1.JSONResponse)(true, 0, "I-E", e));

@@ -12,11 +12,28 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reconnectClientBySession = exports.destroySession = exports.updateClientDeviceInfoBySessionName = exports.setGlobalVenomClient = exports.getGlobalVenomClientBySessionName = void 0;
+exports.reconnectClientBySession = exports.destroySession = exports.updateClientDeviceInfoBySessionName = exports.setGlobalVenomClient = exports.getGlobalVenomClientBySessionName = exports.getClientAndCheckConnection = void 0;
 const process_1 = require("../process/process");
 const path_1 = __importDefault(require("path"));
 const removedir_1 = require("../../utils/so/removedir");
 const start_1 = require("../start");
+const session_1 = require("../session/session");
+function getClientAndCheckConnection(userId, sessionId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const client = getGlobalVenomClientBySessionName((0, session_1.getVenomSessionName)(userId, sessionId));
+            if (!client)
+                throw "unknown client";
+            if (!(yield client.client.isConnected()))
+                throw "is not connected";
+            return client;
+        }
+        catch (e) {
+            throw e;
+        }
+    });
+}
+exports.getClientAndCheckConnection = getClientAndCheckConnection;
 function getGlobalVenomClientBySessionName(sessionName) {
     if (!global.venomClients)
         return false;

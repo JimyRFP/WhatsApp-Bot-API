@@ -3,6 +3,20 @@ import { killProcessBySessionName } from "../process/process";
 import path from 'path';
 import { removeDir } from "../../utils/so/removedir";
 import { killSessionAndStartVenom, updateBrowserInfo } from "../start";
+import { getVenomSessionName } from "../session/session";
+
+export async function getClientAndCheckConnection(userId:number,sessionId:number){
+    try{
+    const client=getGlobalVenomClientBySessionName(getVenomSessionName(userId,sessionId));
+    if(!client)
+       throw "unknown client";
+     if(!(await client.client.isConnected()))
+        throw "is not connected";
+     return client;   
+    }catch(e){
+        throw e;
+    }    
+}
 export function getGlobalVenomClientBySessionName(sessionName:string):venomClient|false{
   if(!global.venomClients)
     return false;

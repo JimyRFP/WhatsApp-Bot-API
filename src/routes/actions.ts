@@ -1,10 +1,9 @@
 import {JSONResponse,setUserDataMiddleware} from "serverpreconfigured";
-import { getGlobalVenomClientBySessionName } from "../venom/control/clientControl";
-import { getVenomSessionName } from "../venom/session/session";
 import { Router } from "express";
 import { filterBodyParams } from "../utils/response/filter";
 import { getNumber } from "../venom/utils/getNumber";
 import meta_sanitizer from "meta-sanitizer";
+import { getClientAndCheckConnection } from "../venom/control/clientControl";
 export const router=Router();
 
 
@@ -18,11 +17,7 @@ router.post('/sendText',async (req:any,res:any)=>{
      const filtered=filterBodyParams(req,res,required,{});
      if(!filtered)
        return;
-     const client=getGlobalVenomClientBySessionName(getVenomSessionName(req.user.id,1));
-     if(!client)
-       throw "unknown client";
-     if(!(await client.client.isConnected()))
-        throw "is not connected";
+     const client=await getClientAndCheckConnection(req.user.id,1);
      let result=await client.client.sendText2(filtered.to,filtered.text);  
      return res.send(JSONResponse(true,0,'',result));
     }catch(e){
@@ -43,17 +38,23 @@ router.post('/sendVCard',async (req:any,res:any)=>{
      const filtered=filterBodyParams(req,res,required,otherParams);
      if(!filtered)
        return;
-     const client=getGlobalVenomClientBySessionName(getVenomSessionName(req.user.id,1));
-     if(!client)
-       throw "unknown client";
-     if(!(await client.client.isConnected()))
-        throw "is not connected";
+     const client=await getClientAndCheckConnection(req.user.id,1);
      let result=await client.client.sendContactVcard(filtered.to,   
                                                      filtered.contact,
                                                      filtered.name) 
      return res.send(JSONResponse(true,0,'',result));
     }catch(e){
         return res.status(500).send(JSONResponse(true,0,"I-E",e));
+    }
+});
+
+router.post('/getContacts',async (req:any,res:any)=>{
+    try{
+       let client=await getClientAndCheckConnection(req.user.id,1);
+       let contacts=await client.client.getAllContacts();
+       return res.send(JSONResponse(true,0,'',contacts));
+    }catch(e){
+       return res.status(500).send(JSONResponse(true,0,"I-E",e));
     }
 });
 
