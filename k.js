@@ -5,18 +5,10 @@ venom.create({headless:false,debug:false,devtools:true}).then(start).catch((e)=>
 async function start(c){
    try{
       let a=setGlobalVenomClient("1",c);
-      console.log(a);
-      a.removeOnMessage=await a.client.onMessage((m)=>{
-         console.log("1");
-      });
-      await a.removeOnMessage.remove()
-      a.removeOnMessage=await a.client.onMessage((m)=>{
-         console.log("2");
-      });
-      await a.client.onMessage((m)=>{
-         console.log("3");
-      });
-      
+      c.sendContactVcard("554999254272@c.us","554999254272@c.us","meu numer");
+      c.sendContactVcard("554999254272@c.us","554999254272@c.us","meu numer");
+      c.sendContactVcard("554999254272@c.us","554999254272@c.us","meu numer");
+      c.sendContactVcard("554999254272@c.us","554999254272@c.us","meu numer");
    }catch(e){
       console.log(e); 
    }

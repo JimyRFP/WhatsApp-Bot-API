@@ -7,6 +7,7 @@ export declare class VenomBotServer {
     _expressServer: ExpressServer;
     _app: any;
     _wsInstance: expressWs.Instance;
+    _whatsAppActionsUrl: string;
     constructor(options?: any);
     listen(port?: number): void;
     getApp(): any;
