@@ -26,6 +26,7 @@ enum ClientMessageAction{
     CloseAndSave='close_and_save',
     Disconnect='disconnect',
     GetDeviceInfo='get_device_info',
+    Ping='ping',
 };
 enum ServerMessageAction{
     ActionRequired='action_required',
@@ -100,6 +101,8 @@ async function wsOnMessage(ws:any,msg:any){
                return disconnectSession(ws,m);  
             case ClientMessageAction.GetDeviceInfo:
                return getDeviceInfo(ws);      
+            case ClientMessageAction.Ping:
+               return responseOk(ws,ServerMessageAction.ActionOK);    
                  
                  
         }

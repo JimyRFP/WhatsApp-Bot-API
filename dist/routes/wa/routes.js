@@ -41,6 +41,7 @@ var ClientMessageAction;
     ClientMessageAction["CloseAndSave"] = "close_and_save";
     ClientMessageAction["Disconnect"] = "disconnect";
     ClientMessageAction["GetDeviceInfo"] = "get_device_info";
+    ClientMessageAction["Ping"] = "ping";
 })(ClientMessageAction || (ClientMessageAction = {}));
 ;
 var ServerMessageAction;
@@ -117,6 +118,8 @@ function wsOnMessage(ws, msg) {
                 return disconnectSession(ws, m);
             case ClientMessageAction.GetDeviceInfo:
                 return getDeviceInfo(ws);
+            case ClientMessageAction.Ping:
+                return responseOk(ws, ServerMessageAction.ActionOK);
         }
         return responseOk(ws, ServerMessageAction.InvalidAction, 'Unknown Action');
     });
