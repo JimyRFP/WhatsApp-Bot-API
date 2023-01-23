@@ -4,12 +4,13 @@ import { router as whatsAppWSRouter } from "./routes/wa/routes";
 import expressWs from "express-ws";
 import { router as routerActions } from "./routes/actions";
 import { setUserDataMiddleware } from "serverpreconfigured";
+import { Express } from "express";
 export class VenomBotServer{
     _userAuthRouteUrl:string;
     _wsAuthRouteUrl:string;
     _whatsAppWSRouteUrl:string;
     _expressServer:ExpressServer;
-    _app:any;
+    _app:Express;
     _wsInstance:expressWs.Instance;
     _whatsAppActionsUrl:string;
     constructor(options:any={}){ 
@@ -21,7 +22,7 @@ export class VenomBotServer{
        this._expressServer.initAuthSystem(this._userAuthRouteUrl);
        this._expressServer.initWSAuthSystem(this._wsAuthRouteUrl);
        this._app=this._expressServer.getApp();
-       this._wsInstance=initWebSocket(this._app);
+       this._wsInstance=initWebSocket(this._app,this._expressServer.getServer());
        this._app.use(this._whatsAppActionsUrl,setUserDataMiddleware,routerActions);
        whatsAppWSRouter(this._whatsAppWSRouteUrl,this._app,options.venomOptions||{});
     }
