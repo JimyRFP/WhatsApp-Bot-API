@@ -1,4 +1,4 @@
-import { Whatsapp } from "venom-bot-updated";
+import { Whatsapp } from "venom-bot";
 export interface venomClient{
     client:Whatsapp,
     deviceInfo:any,

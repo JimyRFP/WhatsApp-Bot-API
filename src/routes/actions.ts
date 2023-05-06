@@ -18,7 +18,7 @@ router.post('/sendText',async (req:any,res:any)=>{
      if(!filtered)
        return;
      const client=await getClientAndCheckConnection(req.user.id,1);
-     let result=await client.client.sendText2(filtered.to,filtered.text);  
+     let result=await client.client.sendText(filtered.to,filtered.text);  
      return res.send(JSONResponse(true,0,'',result));
     }catch(e){
         return res.status(500).send(JSONResponse(true,0,"I-E",e));

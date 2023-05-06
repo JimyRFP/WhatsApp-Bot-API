@@ -4,7 +4,7 @@ export async function sendTextMessage(client:any,
                                       onSend:any=null,
                                       onError:any=null){
     try{
-       let result=await client.sendText2(to,message);
+       let result=await client.sendText(to,message);
        if(onSend)
          onSend(result);
        return result;         
@@ -25,7 +25,7 @@ export async function sendMassiveTextMessage(client:any,
       throw "to param must be array";
     for(let i=0;i<to.length;i++){
       try{
-         let r=await client.sendText2(to[i],message);
+         let r=await client.sendText(to[i],message);
          result_ok.push({to_index:i,result:r});
       }catch(e){
          result_error.push({to_index:i,error:e});

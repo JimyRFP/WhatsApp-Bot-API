@@ -13,7 +13,7 @@ exports.sendMassiveTextMessage = exports.sendTextMessage = void 0;
 function sendTextMessage(client, message, to, onSend = null, onError = null) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            let result = yield client.sendText2(to, message);
+            let result = yield client.sendText(to, message);
             if (onSend)
                 onSend(result);
             return result;
@@ -34,7 +34,7 @@ function sendMassiveTextMessage(client, message, to, onEnd = null) {
             throw "to param must be array";
         for (let i = 0; i < to.length; i++) {
             try {
-                let r = yield client.sendText2(to[i], message);
+                let r = yield client.sendText(to[i], message);
                 result_ok.push({ to_index: i, result: r });
             }
             catch (e) {

@@ -1,6 +1,6 @@
 {
   "name": "venom-bot-server",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "description": "Backend server to control whatsapp bot by websocket",
   "main": "dist/index.js",
   "scripts": {
@@ -25,7 +25,7 @@
     "serverpreconfigured": "^2.1.4",
     "sharp": "^0.30.7",
     "typescript": "^4.7.4",
-    "venom-bot-updated": "^1.7.1"
+    "venom-bot": "^5.0.1"
   },
   "devDependencies": {
     "@types/spinnies": "^0.5.0"

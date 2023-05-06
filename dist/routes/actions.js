@@ -30,7 +30,7 @@ exports.router.post('/sendText', (req, res) => __awaiter(void 0, void 0, void 0,
         if (!filtered)
             return;
         const client = yield (0, clientControl_1.getClientAndCheckConnection)(req.user.id, 1);
-        let result = yield client.client.sendText2(filtered.to, filtered.text);
+        let result = yield client.client.sendText(filtered.to, filtered.text);
         return res.send((0, serverpreconfigured_1.JSONResponse)(true, 0, '', result));
     }
     catch (e) {
